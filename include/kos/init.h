@@ -60,7 +60,19 @@ __BEGIN_DECLS
     KOS_INIT_FLAG(flags, INIT_NET, bba_la_shutdown); \
     KOS_INIT_FLAG(flags, INIT_FS_ROMDISK, fs_romdisk_init); \
     KOS_INIT_FLAG(flags, INIT_FS_ROMDISK, fs_romdisk_shutdown); \
+    KOS_INIT_FLAG(flags, INIT_FS_NULL, fs_null_init); \
+    KOS_INIT_FLAG(flags, INIT_FS_NULL, fs_null_shutdown); \
+    KOS_INIT_FLAG(flags, INIT_FS_PTY, fs_pty_init); \
+    KOS_INIT_FLAG(flags, INIT_FS_PTY, fs_pty_shutdown); \
+    KOS_INIT_FLAG(flags, INIT_FS_RAMDISK, fs_ramdisk_init); \
+    KOS_INIT_FLAG(flags, INIT_FS_RAMDISK, fs_ramdisk_shutdown); \
+    KOS_INIT_FLAG(flags, INIT_FS_RND, fs_rnd_init); \
+    KOS_INIT_FLAG(flags, INIT_FS_RND, fs_rnd_shutdown); \
+    KOS_INIT_FLAG(flags, INIT_FS_DEV, fs_dev_init); \
+    KOS_INIT_FLAG(flags, INIT_FS_DEV, fs_dev_shutdown); \
     KOS_INIT_FLAG(flags, INIT_EXPORT, export_init); \
+    KOS_INIT_FLAG(flags, INIT_LIBRARY, library_init); \
+    KOS_INIT_FLAG(flags, INIT_LIBRARY, library_shutdown); \
     KOS_INIT_FLAG_NONE(flags, INIT_NO_SHUTDOWN, kos_shutdown); \
     KOS_INIT_FLAGS_ARCH(flags)
 
