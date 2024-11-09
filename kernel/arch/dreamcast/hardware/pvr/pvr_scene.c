@@ -423,3 +423,14 @@ int pvr_check_ready(void) {
     else
         return -1;
 }
+
+int pvr_wait_render_done(void) {
+    int t = 0;
+
+    irq_disable_scoped();
+
+    if(pvr_state.render_busy)
+        t = genwait_wait((void *)&pvr_state.render_busy, "PVR wait render done", 100, NULL);
+
+    return t;
+}

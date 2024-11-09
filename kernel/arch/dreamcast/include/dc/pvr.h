@@ -2123,6 +2123,19 @@ int pvr_wait_ready(void);
 */
 int pvr_check_ready(void);
 
+/** \brief   Block the caller until the PVR has finished rendering the previous
+             frame.
+    \ingroup pvr_scene_mgmt
+
+    This function can be used to wait until the PVR is done rendering a previous
+    scene. This can be useful for instance to make sure that the PVR is done
+    using textures that have to be updated, before updating those.
+
+    \retval 0               On success.
+    \retval -1              On error. Something is probably very wrong...
+*/
+int pvr_wait_render_done(void);
+
 
 /* Primitive handling ************************************************/
 

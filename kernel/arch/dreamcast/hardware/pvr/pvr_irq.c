@@ -191,6 +191,8 @@ void pvr_int_handler(uint32 code, void *data) {
             pvr_state.render_busy = 0;
             pvr_state.render_completed = 1;
             pvr_sync_stats(PVR_SYNC_RNDDONE);
+
+            genwait_wake_all((void *)&pvr_state.render_busy);
             break;
     }
 
