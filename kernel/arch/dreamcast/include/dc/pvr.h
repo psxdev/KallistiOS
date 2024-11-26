@@ -1493,12 +1493,12 @@ void pvr_set_bg_color(float r, float g, float b);
     their final color by the scale value set here when shadows are enabled and
     the polygon is inside the modifier (or outside for exclusion volumes).
 
-    \param  enable          Set to non-zero to enable cheap shadow mode.
+    \param  enable          Set to true to enable cheap shadow mode.
     \param  scale_value     Floating point value (between 0 and 1) representing
                             how colors of polygons affected by and inside the
                             volume will be modified by the shadow volume.
 */
-void pvr_set_shadow_scale(int enable, float scale_value);
+void pvr_set_shadow_scale(bool enable, float scale_value);
 
 /** \brief   Set Z clipping depth.
     \ingroup pvr_global
