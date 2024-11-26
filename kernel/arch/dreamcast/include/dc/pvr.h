@@ -2451,7 +2451,7 @@ typedef enum pvr_dma_type {
     \param  count           The number of bytes to copy. Must be a multiple of
                             32.
     \param  type            The type of DMA transfer to do (see list of modes).
-    \param  block           Non-zero if you want the function to block until the
+    \param  block           True if you want the function to block until the
                             DMA completes.
     \param  callback        A function to call upon completion of the DMA.
     \param  cbdata          Data to pass to the callback function.
@@ -2466,7 +2466,7 @@ typedef enum pvr_dma_type {
     \see    pvr_dma_type_t
 */
 int pvr_dma_transfer(const void *src, uintptr_t dest, size_t count,
-                     pvr_dma_type_t type, int block,
+                     pvr_dma_type_t type, bool block,
                      pvr_dma_callback_t callback, void *cbdata);
 
 /** \brief   Load a texture using TA DMA.
@@ -2479,7 +2479,7 @@ int pvr_dma_transfer(const void *src, uintptr_t dest, size_t count,
     \param  dest            Where to copy to. Must be 32-byte aligned.
     \param  count           The number of bytes to copy. Must be a multiple of
                             32.
-    \param  block           Non-zero if you want the function to block until the
+    \param  block           True if you want the function to block until the
                             DMA completes.
     \param  callback        A function to call upon completion of the DMA.
     \param  cbdata          Data to pass to the callback function.
@@ -2491,7 +2491,7 @@ int pvr_dma_transfer(const void *src, uintptr_t dest, size_t count,
     \em     EFAULT - dest is not 32-byte aligned \n
     \em     EIO - I/O error
 */
-int pvr_txr_load_dma(void *src, pvr_ptr_t dest, size_t count, int block,
+int pvr_txr_load_dma(const void *src, pvr_ptr_t dest, size_t count, bool block,
                      pvr_dma_callback_t callback, void *cbdata);
 
 /** \brief   Load vertex data to the TA using TA DMA.
@@ -2503,7 +2503,7 @@ int pvr_txr_load_dma(void *src, pvr_ptr_t dest, size_t count, int block,
     \param  src             Where to copy from. Must be 32-byte aligned.
     \param  count           The number of bytes to copy. Must be a multiple of
                             32.
-    \param  block           Non-zero if you want the function to block until the
+    \param  block           True if you want the function to block until the
                             DMA completes.
     \param  callback        A function to call upon completion of the DMA.
     \param  cbdata          Data to pass to the callback function.
@@ -2515,7 +2515,7 @@ int pvr_txr_load_dma(void *src, pvr_ptr_t dest, size_t count, int block,
     \em     EFAULT - dest is not 32-byte aligned \n
     \em     EIO - I/O error
  */
-int pvr_dma_load_ta(void *src, size_t count, int block,
+int pvr_dma_load_ta(const void *src, size_t count, bool block,
                     pvr_dma_callback_t callback, void *cbdata);
 
 /** \brief   Load yuv data to the YUV converter using TA DMA.
@@ -2527,7 +2527,7 @@ int pvr_dma_load_ta(void *src, size_t count, int block,
     \param  src             Where to copy from. Must be 32-byte aligned.
     \param  count           The number of bytes to copy. Must be a multiple of
                             32.
-    \param  block           Non-zero if you want the function to block until the
+    \param  block           True if you want the function to block until the
                             DMA completes.
     \param  callback        A function to call upon completion of the DMA.
     \param  cbdata          Data to pass to the callback function.
@@ -2539,15 +2539,15 @@ int pvr_dma_load_ta(void *src, size_t count, int block,
     \em     EFAULT - dest is not 32-byte aligned \n
     \em     EIO - I/O error
 */
-int pvr_dma_yuv_conv(void *src, size_t count, int block,
+int pvr_dma_yuv_conv(const void *src, size_t count, bool block,
                      pvr_dma_callback_t callback, void *cbdata);
 
 /** \brief   Is PVR DMA is inactive?
     \ingroup pvr_dma
-    \return                 Non-zero if there is no PVR DMA active, thus a DMA
-                            can begin or 0 if there is an active DMA.
+    \return                 True if there is no PVR DMA active, thus a DMA
+                            can begin or false if there is an active DMA.
 */
-int pvr_dma_ready(void);
+bool pvr_dma_ready(void);
 
 /** \brief   Initialize TA/PVR DMA. 
     \ingroup pvr_dma
