@@ -40,6 +40,7 @@
 __BEGIN_DECLS
 
 #include <stdalign.h>
+#include <stdbool.h>
 
 #include <arch/memory.h>
 #include <arch/types.h>
@@ -1903,10 +1904,10 @@ void pvr_vertbuf_written(pvr_list_t list, uint32_t amt);
     function to change the mode that you should set it each frame to ensure that
     the mode is set properly.
 
-    \param  presort         Set to 1 to set the presort mode for translucent
-                            polygons, set to 0 to use autosort mode.
+    \param  presort         Set to true to set the presort mode for translucent
+                            polygons, set to false to use autosort mode.
 */
-void pvr_set_presort_mode(int presort);
+void pvr_set_presort_mode(bool presort);
 
 /** \brief   Begin collecting data for a frame of 3D output to the off-screen
              frame buffer.
