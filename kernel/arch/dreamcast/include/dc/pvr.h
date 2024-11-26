@@ -1432,7 +1432,7 @@ typedef struct {
     \retval -1              If the PVR has already been initialized or the video
                             mode active is not suitable for 3D
 */
-int pvr_init(pvr_init_params_t *params);
+int pvr_init(const pvr_init_params_t *params);
 
 /** \brief   Simple PVR initialization.
     \ingroup pvr_init
