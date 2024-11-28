@@ -1864,7 +1864,7 @@ int pvr_vertex_dma_enabled(void);
     
     \return                 The old buffer location (if any)
 */
-void *pvr_set_vertbuf(pvr_list_t list, void *buffer, int len);
+void *pvr_set_vertbuf(pvr_list_t list, void *buffer, size_t len);
 
 /** \brief   Retrieve a pointer to the current output location in the DMA buffer
              for the requested list.
@@ -1890,7 +1890,7 @@ void *pvr_vertbuf_tail(pvr_list_t list);
     \param  list            The primitive list that was modified.
     \param  amt             Number of bytes written. Must be a multiple of 32.
 */
-void pvr_vertbuf_written(pvr_list_t list, uint32_t amt);
+void pvr_vertbuf_written(pvr_list_t list, size_t amt);
 
 /** \brief   Set the translucent polygon sort mode for the next frame.
     \ingroup pvr_scene_mgmt
@@ -1994,7 +1994,7 @@ int pvr_list_finish(void);
     \retval 0               On success.
     \retval -1              On error.
 */
-int pvr_prim(void *data, int size);
+int pvr_prim(const void *data, size_t size);
 
 /** \defgroup pvr_direct  Direct Rendering
     \brief                API for using direct rendering with the PVR
@@ -2071,7 +2071,7 @@ void pvr_send_to_ta(void *data);
     \retval 0               On success.
     \retval -1              On error.
 */
-int pvr_list_prim(pvr_list_t list, void *data, int size);
+int pvr_list_prim(pvr_list_t list, const void *data, size_t size);
 
 /** \brief   Flush the buffered data of the given list type to the TA.
     \ingroup pvr_list_mgmt
