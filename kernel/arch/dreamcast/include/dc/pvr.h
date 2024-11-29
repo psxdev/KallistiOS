@@ -1759,7 +1759,7 @@ void pvr_mem_free(pvr_ptr_t chunk);
 
     \return                 The number of bytes available
 */
-uint32_t pvr_mem_available(void);
+size_t pvr_mem_available(void);
 
 /** \brief   Reset the PVR RAM pool.
     \ingroup pvr_mem_mgmt
