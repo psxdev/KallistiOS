@@ -1416,6 +1416,13 @@ typedef struct {
 
     int     opb_overflow_count;
 
+    /** \brief  Disable vertex buffer double-buffering.
+
+        Use only one single vertex buffer. This means that the PVR must finish
+        rendering before the Tile Accelerator is used to prepare a new frame;
+        but it allows using much smaller vertex buffers. */
+    int     vbuf_doublebuf_disabled;
+
 } pvr_init_params_t;
 
 /** \brief   Initialize the PVR chip to ready status.

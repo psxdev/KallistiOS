@@ -187,7 +187,7 @@ void pvr_begin_queued_render(void) {
     } zclip;
 
     /* Get the appropriate buffer */
-    tbuf = pvr_state.ta_buffers + (pvr_state.ta_target ^ 1);
+    tbuf = pvr_state.ta_buffers + (pvr_state.ta_target ^ pvr_state.vbuf_doublebuf);
     rbuf = pvr_state.frame_buffers + (bufn ^ 1);
 
     /* Calculate background value for below */

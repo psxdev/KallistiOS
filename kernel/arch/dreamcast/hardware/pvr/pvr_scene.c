@@ -91,6 +91,12 @@ static void pvr_start_ta_rendering(void) {
     // Make sure to wait until the TA is ready to start rendering a new scene
     if(!pvr_state.ta_ready) {
         pvr_wait_ready();
+
+        // If using a single vertex buffer, we have to wait until the PVR is
+        // done rendering to use the TA again.
+        if(!pvr_state.vbuf_doublebuf)
+            pvr_wait_render_done();
+
         pvr_state.ta_ready = 1;
     }
 
