@@ -171,35 +171,36 @@ static int read_wav_header(file_t fd, wavhdr_t *wavhdr) {
 }
 
 static int read_wav_header_buf(char *buf, wavhdr_t *wavhdr, size_t *bufidx) {
-	size_t bufi = *bufidx;
+    /* maintain buffer index during function */
+    size_t tmp_bufidx = *bufidx;
 
-	memcpy(&(wavhdr->magic), buf, sizeof(wavhdr->magic));
-	bufi += sizeof(wavhdr->magic);
+    memcpy(&(wavhdr->magic), buf, sizeof(wavhdr->magic));
+    tmp_bufidx += sizeof(wavhdr->magic);
 
     if(strncmp((const char*)wavhdr->magic.riff, "RIFF", 4)) {
-        dbglog(DBG_WARNING, "snd_sfx: sfx file is not RIFF\n");
+        dbglog(DBG_WARNING, "snd_sfx: sfx buffer is not RIFF\n");
         return -1;
     }
 
     /* Check file magic */
     if(strncmp((const char*)wavhdr->magic.riff_format, "WAVE", 4)) {
-        dbglog(DBG_WARNING, "snd_sfx: sfx file is not RIFF WAVE\n");
+        dbglog(DBG_WARNING, "snd_sfx: sfx buffer is not RIFF WAVE\n");
         return -1;
     }
 
     do {
         /* Read the chunk header */
-		memcpy(&(wavhdr->chunk), buf + bufi, sizeof(wavhdr->chunk));
-		bufi += sizeof(wavhdr->chunk);
+        memcpy(&(wavhdr->chunk), buf + tmp_bufidx, sizeof(wavhdr->chunk));
+        tmp_bufidx += sizeof(wavhdr->chunk);
 
         /* If it is the fmt chunk, grab the fields we care about and skip the 
            rest of the section if there is more */
         if(strncmp((const char *)wavhdr->chunk.id, "fmt ", 4) == 0) {
-			memcpy(&(wavhdr->fmt), buf + bufi, sizeof(wavhdr->fmt));
-			bufi += sizeof(wavhdr->fmt);
+            memcpy(&(wavhdr->fmt), buf + tmp_bufidx, sizeof(wavhdr->fmt));
+            tmp_bufidx += sizeof(wavhdr->fmt);
 
             /* Skip the rest of the fmt chunk */ 
-			bufi += wavhdr->chunk.size - sizeof(wavhdr->fmt);
+            tmp_bufidx += wavhdr->chunk.size - sizeof(wavhdr->fmt);
         }
         /* If we found the data chunk, we are done */
         else if(strncmp((const char *)wavhdr->chunk.id, "data", 4) == 0) {
@@ -207,11 +208,12 @@ static int read_wav_header_buf(char *buf, wavhdr_t *wavhdr, size_t *bufidx) {
         }
         /* Skip meta data */
         else { 
-			bufi += wavhdr->chunk.size;
+            tmp_bufidx += wavhdr->chunk.size;
         }
     } while(1);
 
-	*bufidx = bufi;
+    /* update buffer index for caller */
+    *bufidx = tmp_bufidx;
 
     return 0;
 }
@@ -234,7 +236,8 @@ static uint8_t *read_wav_data(file_t fd, wavhdr_t *wavhdr) {
 }
 
 static uint8_t *read_wav_data_buf(char *buf, wavhdr_t *wavhdr, size_t *bufidx) {
-	size_t bufi = *bufidx;
+    /* maintain buffer index during function */
+    size_t tmp_bufidx = *bufidx;
 
     /* Allocate memory for WAV data */
     uint8_t *wav_data = memalign(32, wavhdr->chunk.size);
@@ -243,10 +246,11 @@ static uint8_t *read_wav_data_buf(char *buf, wavhdr_t *wavhdr, size_t *bufidx) {
         return NULL;
 
     /* Read WAV data */
-	memcpy(wav_data, buf + bufi, wavhdr->chunk.size);
-	bufi += wavhdr->chunk.size;
+    memcpy(wav_data, buf + tmp_bufidx, wavhdr->chunk.size);
+    tmp_bufidx += wavhdr->chunk.size;
 
-	*bufidx = bufi;
+    /* update buffer index for caller */
+    *bufidx = tmp_bufidx;
 
     return wav_data;
 }
@@ -572,19 +576,16 @@ sfxhnd_t snd_sfx_load_buf(char *buf) {
     snd_effect_t *effect;
     uint8_t *wav_data;
     uint32_t sample_count;
-	size_t bufi;
+    size_t bufidx = 0;
 
-	if (!buf) {
-		dbglog(DBG_ERROR, "snd_sfx_load_buf: can't read wav data from null pointer");
-		return SFXHND_INVALID;
-	}
-
-	/* Buffer index reset */
-	bufi = 0;
+    if (!buf) {
+        dbglog(DBG_ERROR, "snd_sfx_load_buf: can't read wav data from NULL");
+        return SFXHND_INVALID;
+    }
 
     /* Read WAV header */
-    if(read_wav_header_buf(buf, &wavhdr, &bufi) < 0) {
-        dbglog(DBG_ERROR, "snd_sfx_load_buf: can't read wav header from buffer %08x\n", (uintptr_t)buf);
+    if(read_wav_header_buf(buf, &wavhdr, &bufidx) < 0) {
+        dbglog(DBG_ERROR, "snd_sfx_load_buf: error reading wav header from buffer %08x\n", (uintptr_t)buf);
         return SFXHND_INVALID;
     }
     /*
@@ -605,8 +606,8 @@ sfxhnd_t snd_sfx_load_buf(char *buf) {
     }
 
     /* Read WAV data */
-    wav_data = read_wav_data_buf(buf, &wavhdr, &bufi);
-	/* Caller manages buffer, don't free here */
+    wav_data = read_wav_data_buf(buf, &wavhdr, &bufidx);
+    /* Caller manages buffer, don't free here */
     if(!wav_data)
         return SFXHND_INVALID;
 
@@ -624,12 +625,16 @@ sfxhnd_t snd_sfx_load_buf(char *buf) {
     return (sfxhnd_t)effect;
 }
 
-sfxhnd_t snd_sfx_load_ex_buf(char *buf, size_t len, uint32_t rate, uint16_t bitsize, uint16_t channels) {
+sfxhnd_t snd_sfx_load_raw_buf(char *buf, size_t len, uint32_t rate, uint16_t bitsize, uint16_t channels) {
     snd_effect_t *effect;
     size_t chan_len, read_len;
     uint8_t *tmp_buff = NULL;
+    size_t bufidx = 0;
 
-	size_t bufi = 0;
+    if (!buf) {
+        dbglog(DBG_ERROR, "snd_sfx_load_raw_buf: can't read PCM buffer from NULL");
+        return SFXHND_INVALID;
+    }
 
     chan_len = len / channels;
     effect = malloc(sizeof(snd_effect_t));
@@ -661,7 +666,7 @@ sfxhnd_t snd_sfx_load_ex_buf(char *buf, size_t len, uint32_t rate, uint16_t bits
     }
 
     if(effect->len > 65534) {
-        dbglog(DBG_WARNING, "snd_sfx_load_ex: PCM file is over 65534 samples\n");
+        dbglog(DBG_WARNING, "snd_sfx_load_raw_buf: PCM buffer is over 65534 samples\n");
     }
 
     effect->locl = snd_mem_malloc(chan_len);
@@ -673,8 +678,8 @@ sfxhnd_t snd_sfx_load_ex_buf(char *buf, size_t len, uint32_t rate, uint16_t bits
 
     if(read_len > 0) {
         tmp_buff = memalign(32, read_len);
-		memcpy(tmp_buff, buf, read_len);
-		bufi += read_len;
+        memcpy(tmp_buff, buf, read_len);
+        bufidx += read_len;
 
         spu_memload_sq(effect->locl, tmp_buff, read_len);
     }
@@ -687,8 +692,8 @@ sfxhnd_t snd_sfx_load_ex_buf(char *buf, size_t len, uint32_t rate, uint16_t bits
         }
         read_len = chan_len;
         if(read_len > 0) {
-			memcpy(tmp_buff, buf + bufi, read_len);
-			bufi += read_len;
+            memcpy(tmp_buff, buf + bufidx, read_len);
+            bufidx += read_len;
             spu_memload_sq(effect->locr, tmp_buff, read_len);
         }
     }
