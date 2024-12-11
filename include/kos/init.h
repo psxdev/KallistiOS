@@ -156,16 +156,16 @@ extern const void * __kos_romdisk;
 #define INIT_NET         0x00000002  /**< Enable built-in networking */
 #define INIT_MALLOCSTATS 0x00000004  /**< Enable malloc statistics */
 #define INIT_QUIET       0x00000008  /**< Disable dbgio */
-#define INIT_EXPORT      0x00000010  /**< Export kernel symbols */
-#define INIT_LIBRARY     0x00000020  /**< Enable support for dynamic libraries. */
+#define INIT_EXPORT      0x00000010  /**< Export kernel symbols/dynamic libs */
+#define INIT_LIBRARY     0x00000010  /**< Export kernel symbols/dynamic libs */
 
-#define INIT_FS_ROMDISK  0x00000040  /**< Enable support for romdisks */
-#define INIT_FS_RAMDISK  0x00000080  /**< Enable support for ramdisk VFS */
-#define INIT_FS_PTY      0x00000100  /**< Enable support for PTY VFS */
-#define INIT_FS_NULL     0x00000200  /**< Enable support for /dev/null VFS */
-#define INIT_FS_RND      0x00000400  /**< Enable support for /dev/urandom VFS */
+#define INIT_FS_ROMDISK  0x00000020  /**< Enable support for romdisks */
+#define INIT_FS_RAMDISK  0x00000040  /**< Enable support for ramdisk VFS */
+#define INIT_FS_PTY      0x00000080  /**< Enable support for PTY VFS */
+#define INIT_FS_NULL     0x00000100  /**< Enable support for /dev/null VFS */
+#define INIT_FS_RND      0x00000200  /**< Enable support for /dev/urandom VFS */
 
-#define INIT_NO_SHUTDOWN 0x00000800  /**< Disable hardware shutdown */
+#define INIT_NO_SHUTDOWN 0x00000400  /**< Disable hardware shutdown */
 /** @} */
 
 __END_DECLS
