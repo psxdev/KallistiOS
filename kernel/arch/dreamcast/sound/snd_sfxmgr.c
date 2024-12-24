@@ -578,7 +578,7 @@ sfxhnd_t snd_sfx_load_buf(char *buf) {
     uint32_t sample_count;
     size_t bufidx = 0;
 
-    if (!buf) {
+    if(!buf) {
         dbglog(DBG_ERROR, "snd_sfx_load_buf: can't read wav data from NULL");
         return SFXHND_INVALID;
     }
@@ -597,9 +597,9 @@ sfxhnd_t snd_sfx_load_buf(char *buf) {
            wavhdr.chunk.size, 
            wavhdr.fmt.format);
     */
-    sample_count = wavhdr.fmt.sample_size >= 8 
-        ? wavhdr.chunk.size / ((wavhdr.fmt.sample_size / 8) * wavhdr.fmt.channels) 
-        : (wavhdr.chunk.size * 2) / wavhdr.fmt.channels;
+    sample_count = wavhdr.fmt.sample_size >= 8 ?
+        wavhdr.chunk.size / ((wavhdr.fmt.sample_size / 8) * wavhdr.fmt.channels) :
+        (wavhdr.chunk.size * 2) / wavhdr.fmt.channels;
 
     if(sample_count > 65534) {
         dbglog(DBG_WARNING, "snd_sfx_load: WAVE file is over 65534 samples\n");
@@ -631,7 +631,7 @@ sfxhnd_t snd_sfx_load_raw_buf(char *buf, size_t len, uint32_t rate, uint16_t bit
     uint8_t *tmp_buff = NULL;
     size_t bufidx = 0;
 
-    if (!buf) {
+    if(!buf) {
         dbglog(DBG_ERROR, "snd_sfx_load_raw_buf: can't read PCM buffer from NULL");
         return SFXHND_INVALID;
     }
@@ -674,8 +674,8 @@ sfxhnd_t snd_sfx_load_raw_buf(char *buf, size_t len, uint32_t rate, uint16_t bit
     if(!effect->locl) {
         goto err_occurred;
     }
-    read_len = chan_len;
 
+    read_len = chan_len;
     if(read_len > 0) {
         tmp_buff = memalign(32, read_len);
         memcpy(tmp_buff, buf, read_len);
@@ -690,6 +690,7 @@ sfxhnd_t snd_sfx_load_raw_buf(char *buf, size_t len, uint32_t rate, uint16_t bit
         if(!effect->locr) {
             goto err_occurred;
         }
+
         read_len = chan_len;
         if(read_len > 0) {
             memcpy(tmp_buff, buf + bufidx, read_len);
@@ -701,6 +702,7 @@ sfxhnd_t snd_sfx_load_raw_buf(char *buf, size_t len, uint32_t rate, uint16_t bit
     if(tmp_buff) {
         free(tmp_buff);
     }
+
     LIST_INSERT_HEAD(&snd_effects, effect, list);
     return (sfxhnd_t)effect;
 

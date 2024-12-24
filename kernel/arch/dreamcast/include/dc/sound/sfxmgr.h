@@ -116,7 +116,7 @@ sfxhnd_t snd_sfx_load_fd(file_t fd, size_t len, uint32_t rate, uint16_t bitsize,
     \warning The sound effect you are loading must be at most 65534 samples 
     in length.
 
-    \param  buf              The buffer to load.
+    \param  buf             The buffer to load.
     \return                 A handle to the sound effect on success. On error,
                             SFXHND_INVALID is returned.
 */
@@ -132,7 +132,7 @@ sfxhnd_t snd_sfx_load_buf(char *buf);
     \warning The sound effect you are loading must be at most 65534 samples 
     in length and multiple by 32 bytes for each channel.
 
-    \param  buf              The buffer.
+    \param  buf             The buffer.
     \param  len             The file length.
     \param  rate            The frequency of the sound.
     \param  bitsize         The sample size (bits per sample).
