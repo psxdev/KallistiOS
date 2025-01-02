@@ -136,11 +136,8 @@ void __atomic_load(size_t size,
 
     (void)memorder;
 
-    spinlock_lock(&locks[lock]);
-
+    spinlock_lock_scoped(&locks[lock]);
     memcpy(ret, (const void *)ptr, size);
-
-    spinlock_unlock(&locks[lock]);
 }
 
 void __atomic_store(size_t size,
@@ -151,11 +148,8 @@ void __atomic_store(size_t size,
 
     (void)memorder;
 
-    spinlock_lock(&locks[lock]);
-
+    spinlock_lock_scoped(&locks[lock]);
     memcpy((void *)ptr, val, size);
-
-    spinlock_unlock(&locks[lock]);
 }
 
 void __atomic_exchange(size_t size,
@@ -167,12 +161,9 @@ void __atomic_exchange(size_t size,
 
     (void)memorder;
 
-    spinlock_lock(&locks[lock]);
-
+    spinlock_lock_scoped(&locks[lock]);
     memcpy(ret, (const void *)ptr, size);
     memcpy((void *)ptr, val, size);
-
-    spinlock_unlock(&locks[lock]);
 }
 
 bool __atomic_compare_exchange(size_t size,
@@ -181,26 +172,21 @@ bool __atomic_compare_exchange(size_t size,
                                void* desired,
                                int success_memorder,
                                int fail_memorder) {
-    bool retval;
     const uintptr_t lock = address_to_spinlock(ptr);
 
     (void)success_memorder;
     (void)fail_memorder;
 
-    spinlock_lock(&locks[lock]);
+    spinlock_lock_scoped(&locks[lock]);
 
     if(memcmp((const void *)ptr, expected, size) == 0) {
         memcpy((void *)ptr, desired, size);
-        retval = true;
+        return true;
     }
     else {
         memcpy(expected, (const void *)ptr, size);
-        retval = false;
+        return false;
     }
-
-    spinlock_unlock(&locks[lock]);
-
-    return retval;
 }
 
 /* All atomics for builtin types are lock-free, while our
