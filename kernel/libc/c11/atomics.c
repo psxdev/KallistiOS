@@ -24,30 +24,26 @@
 #define ATOMIC_LOAD_N_(type, n) \
     type \
     __atomic_load_##n(const volatile void *ptr, int model) { \
-        const int irq = irq_disable(); \
-        const type ret = *(type *)ptr; \
         (void)model; \
-        irq_restore(irq); \
-        return ret; \
+        irq_disable_scoped(); \
+        return *(type *)ptr; \
     }
 
 #define ATOMIC_STORE_N_(type, n) \
     void \
     __atomic_store_##n(volatile void *ptr, type val, int model) { \
-        const int irq = irq_disable(); \
         (void)model; \
+        irq_disable_scoped(); \
         *(type *)ptr = val; \
-        irq_restore(irq); \
     }
 
 #define ATOMIC_EXCHANGE_N_(type, n) \
     type \
     __atomic_exchange_##n(volatile void* ptr, type val, int model) { \
-        const int irq = irq_disable(); \
+        irq_disable_scoped(); \
         const type ret = *(type *)ptr; \
         (void)model; \
         *(type*)ptr = val; \
-        irq_restore(irq); \
         return ret; \
     }
 
@@ -59,20 +55,17 @@
                                   bool weak, \
                                   int success_memorder, \
                                   int failure_memorder) { \
-        const int irq = irq_disable(); \
-        bool retval; \
         (void)weak; \
         (void)success_memorder; \
         (void)failure_memorder; \
+        irq_disable_scoped(); \
         if(*(type *)ptr == *(type *)expected) { \
             *(type *)ptr = desired; \
-            retval = true; \
+            return true; \
         } else { \
             *(type *)expected = *(type *)ptr; \
-            retval = false; \
+            return false; \
         } \
-        irq_restore(irq); \
-        return retval; \
     }
 
 #define ATOMIC_FETCH_N_(type, n, opname, op) \
@@ -80,11 +73,10 @@
     __atomic_fetch_##opname##_##n(volatile void* ptr, \
                                   type val, \
                                   int memorder) { \
-        const int irq = irq_disable(); \
+        irq_disable_scoped(); \
         type ret = *(type *)ptr; \
         (void)memorder; \
         *(type *)ptr op val; \
-        irq_restore(irq); \
         return ret;  \
     }
 
@@ -93,11 +85,10 @@
     __atomic_fetch_nand_##n(volatile void* ptr, \
                             type val, \
                             int memorder) { \
-        const int irq = irq_disable(); \
+        irq_disable_scoped(); \
         type ret = *(type *)ptr; \
         (void)memorder; \
         *(type *)ptr = ~(*(type *)ptr & val); \
-        irq_restore(irq); \
         return ret;  \
     }
 
