@@ -92,6 +92,23 @@ static inline void spinlock_lock(spinlock_t *lock) {
         thd_pass();
 }
 
+/** \brief  Spin on a lock.
+
+    This function will spin on the lock, and will not return until the lock has
+    been obtained for the calling thread, unless it is called from within an
+    interrupt context.
+
+    \param  lock            A pointer to the spinlock to be locked.
+    \return                 True if the spinlock could be locked, false otherwise.
+*/
+static inline bool spinlock_lock_irqsafe(spinlock_t *lock) {
+    if(irq_inside_int())
+        return spinlock_trylock(lock);
+
+    spinlock_lock(lock);
+    return true;
+}
+
 /** \brief  Free a lock.
 
     This function will unlock the lock that is currently held by the calling
