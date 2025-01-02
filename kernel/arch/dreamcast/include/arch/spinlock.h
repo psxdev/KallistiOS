@@ -116,6 +116,27 @@ static inline bool spinlock_is_locked(spinlock_t *lock) {
     return *lock != 0;
 }
 
+/** \cond INTERNAL */
+static inline void __spinlock_scoped_cleanup(spinlock_t **lock) {
+    spinlock_unlock(*lock);
+}
+
+#define ___spinlock_lock_scoped(m, l) \
+    spinlock_t *__scoped_spinlock_##l __attribute__((cleanup(__spinlock_scoped_cleanup))) = (spinlock_lock(m), (m))
+#define __spinlock_lock_scoped(m, l) ___spinlock_lock_scoped(m, l)
+/** \endcond */
+
+/** \brief  Spin on a lock with scope management.
+
+    This macro will spin on the lock, similar to spinlock_lock(), with the
+    difference that the lock will automatically be freed once the execution
+    exits the functional block in which the macro was called.
+
+    \param  lock            A pointer to the spinlock to be locked.
+*/
+#define spinlock_lock_scoped(lock) \
+    __spinlock_lock_scoped((lock), __LINE__)
+
 __END_DECLS
 
 #endif  /* __ARCH_SPINLOCK_H */
