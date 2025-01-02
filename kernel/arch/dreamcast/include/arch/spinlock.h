@@ -71,11 +71,11 @@ static inline void spinlock_init(spinlock_t *lock) {
 static inline bool spinlock_trylock(spinlock_t *lock) {
     bool locked = false;
 
-    __asm__ __volatile__("tas.b @%1\n\t"
+    __asm__ __volatile__("tas.b @%2\n\t"
                          "movt %0\n\t"
-                         : "=r"(locked)
+                         : "=r"(locked), "=m"(*lock)
                          : "r"(lock)
-                         : "t", "memory");
+                         : "t");
 
     return locked;
 }
