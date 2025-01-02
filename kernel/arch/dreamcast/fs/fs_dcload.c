@@ -35,16 +35,10 @@ printf goes to the dc-tool console
 static spinlock_t mutex = SPINLOCK_INITIALIZER;
 
 #define plain_dclsc(...) ({ \
-        int old = 0, rv; \
-        if(!irq_inside_int()) { \
-            old = irq_disable(); \
-        } \
+        irq_disable_scoped(); \
         while(FIFO_STATUS & FIFO_SH4) \
             ; \
-        rv = dcloadsyscall(__VA_ARGS__); \
-        if(!irq_inside_int()) \
-            irq_restore(old); \
-        rv; \
+        dcloadsyscall(__VA_ARGS__); \
     })
 
 // #define plain_dclsc(...) dcloadsyscall(__VA_ARGS__)
