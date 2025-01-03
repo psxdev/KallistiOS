@@ -11,6 +11,11 @@
 #include <kos.h>
 #include <kos/string.h>
 
+/* An icon is always 32x32 4bpp */
+#define ICON_SIZE (32 * 32 / 2)
+
+#define NB_ICONS_MAX 3
+
 void draw_dir(void) {
     file_t      d;
     int     y = 88;
@@ -77,7 +82,7 @@ int wait_start(void) {
     }
 }
 
-static unsigned char vmu_icon[1024];
+static unsigned char vmu_icon[ICON_SIZE * NB_ICONS_MAX];
 
 /* Here's the actual meat of it */
 void write_entry(void) {
@@ -90,7 +95,7 @@ void write_entry(void) {
     strcpy(pkg.desc_short, "VMU Test");
     strcpy(pkg.desc_long, "This is a test VMU file");
     strcpy(pkg.app_id, "KOS");
-    pkg.icon_cnt = 2;
+    pkg.icon_cnt = NB_ICONS_MAX;
     pkg.icon_data = vmu_icon;
     pkg.icon_anim_speed = 8;
     pkg.eyecatch_type = VMUPKG_EC_NONE;
