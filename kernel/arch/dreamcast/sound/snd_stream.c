@@ -349,6 +349,11 @@ int snd_stream_init_ex(int channels, size_t buffer_size) {
            This can also be used for mono streams on unaligned data.
         */
         sep_buffer[0] = memalign(32, buffer_size);
+
+        if(sep_buffer[0] == NULL) {
+            dbglog(DBG_ERROR, "snd_stream_init_ex(): memory allocation failed\n");
+            return -1;
+        }
         sep_buffer[1] = sep_buffer[0] + (buffer_size / 8);
     }
     else {
