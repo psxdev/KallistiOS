@@ -226,7 +226,7 @@ void snd_adpcm_split(uint32_t *data, uint32_t *left, uint32_t *right, size_t siz
 
     \return                 Last channel position in samples.
 */
-uint16_t snd_get_pos(uint32_t ch);
+uint16_t snd_get_pos(unsigned int ch);
 
 /** \brief  Get AICA channel playback state.
 
@@ -237,7 +237,7 @@ uint16_t snd_get_pos(uint32_t ch);
 
     \return                 True if the channel is playing.
 */
-bool snd_is_playing(uint32_t ch);
+bool snd_is_playing(unsigned int ch);
 
 __END_DECLS
 

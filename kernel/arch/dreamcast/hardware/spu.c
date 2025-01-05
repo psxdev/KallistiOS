@@ -255,8 +255,10 @@ void spu_memset_sq(uintptr_t dst, uint32_t what, size_t length) {
 /* Reset the AICA channel registers */
 void spu_reset_chans(void) {
     int i;
+    g2_ctx_t ctx;
+
     g2_fifo_wait();
-    g2_ctx_t ctx = g2_lock();
+    ctx = g2_lock();
     g2_write_32_raw(SNDREGADDR(0x2800), 0);
 
     for(i = 0; i < 64; i++) {
