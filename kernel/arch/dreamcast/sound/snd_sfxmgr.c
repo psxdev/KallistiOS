@@ -719,6 +719,10 @@ err_occurred:
 }
 
 int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan) {
+    return snd_sfx_play_chn_lp(chn, idx, vol, pan, 0);
+}
+
+int snd_sfx_play_chn_lp(int chn, sfxhnd_t idx, int vol, int pan, int loop) {
     int size;
     snd_effect_t *t = (snd_effect_t *)idx;
     AICA_CMDSTR_CHANNEL(tmp, cmd, chan);
@@ -735,7 +739,7 @@ int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan) {
     chan->base = t->locl;
     chan->type = t->fmt;
     chan->length = size;
-    chan->loop = 0;
+    chan->loop = loop;
     chan->loopstart = 0;
     chan->loopend = size;
     chan->freq = t->rate;
@@ -762,6 +766,10 @@ int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan) {
 }
 
 int snd_sfx_play(sfxhnd_t idx, int vol, int pan) {
+    return snd_sfx_play_lp(idx, vol, pan, 0);
+}
+
+int snd_sfx_play_lp(sfxhnd_t idx, int vol, int pan, int loop) {
     int chn, moved, old;
 
     /* This isn't perfect.. but it should be good enough. */
@@ -785,7 +793,7 @@ int snd_sfx_play(sfxhnd_t idx, int vol, int pan) {
     }
     else {
         sfx_nextchan = (chn + 2) % 64;  /* in case of stereo */
-        return snd_sfx_play_chn(chn, idx, vol, pan);
+        return snd_sfx_play_chn_lp(chn, idx, vol, pan, loop);
     }
 }
 

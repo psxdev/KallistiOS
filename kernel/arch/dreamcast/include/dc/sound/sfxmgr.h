@@ -176,6 +176,25 @@ void snd_sfx_unload_all(void);
 */
 int snd_sfx_play(sfxhnd_t idx, int vol, int pan);
 
+/** \brief  Play a sound effect with looping.
+
+    This function plays a loaded sound effect with the specified volume (for
+    both stereo or mono) and panning values (for mono sounds only).
+
+    \param  idx             The handle to the sound effect to play.
+    \param  vol             The volume to play at (between 0 and 255).
+    \param  pan             The panning value of the sound effect. 0 is all the
+                            way to the left, 128 is center, 255 is all the way
+                            to the right.
+    \param  loop            Whether to loop the sound effect or not.
+
+    \return                 The channel used to play the sound effect (or the
+                            left channel in the case of a stereo sound, the
+                            right channel will be the next one) on success, or
+                            -1 on failure.
+*/
+int snd_sfx_play_lp(sfxhnd_t idx, int vol, int pan, int loop);
+
 /** \brief  Play a sound effect on a specific channel.
 
     This function works similar to snd_sfx_play(), but allows you to specify the
@@ -193,6 +212,25 @@ int snd_sfx_play(sfxhnd_t idx, int vol, int pan);
     \return                 chn
 */
 int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan);
+
+/** \brief  Play a sound effect on a specific channel with looping.
+
+    This function works similar to snd_sfx_play(), but allows you to specify the
+    channel to play on. No error checking is done with regard to the channel, so
+    be sure its safe to play on that channel before trying.
+
+    \param  chn             The channel to play on (or in the case of stereo,
+                            the left channel).
+    \param  idx             The handle to the sound effect to play.
+    \param  vol             The volume to play at (between 0 and 255).
+    \param  pan             The panning value of the sound effect. 0 is all the
+                            way to the left, 128 is center, 255 is all the way
+                            to the right.
+    \param  loop            Whether to loop the sound effect or not.
+
+    \return                 chn
+*/
+int snd_sfx_play_chn_lp(int chn, sfxhnd_t idx, int vol, int pan, int loop);
 
 /** \brief  Stop a single channel of sound.
 
