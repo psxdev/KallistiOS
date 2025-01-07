@@ -26,6 +26,11 @@
 #define EXPEVT ( *((volatile uint32_t *)(0xff000024)) ) /* Exception Event Register */
 #define INTEVT ( *((volatile uint32_t *)(0xff000028)) ) /* Interrupt Event Register */
 
+#define IPRA   ( *((volatile uint16_t *)(0xffd00004)) ) /* Interrupt priority register A */
+#define IPRB   ( *((volatile uint16_t *)(0xffd00008)) ) /* Interrupt priority register A */
+#define IPRC   ( *((volatile uint16_t *)(0xffd0000c)) ) /* Interrupt priority register A */
+#define IPRD   ( *((volatile uint16_t *)(0xffd00010)) ) /* Interrupt priority register A */
+
 /* IRQ handler closure */
 struct irq_cb {
     irq_handler hdl;
@@ -396,6 +401,9 @@ int irq_init(void) {
 
     /* Set a default FPU exception handler */
     irq_set_handler(EXC_FPU, irq_def_fpu, NULL);
+
+    /* Unmask DMA IRQs */
+    IPRC = 0x300;
 
     /* Set a default context (will be superseded if threads are
        enabled later) */
