@@ -20,6 +20,7 @@
 #include <kos/dbgio.h>
 #include <kos/thread.h>
 #include <kos/library.h>
+#include <kos/regfield.h>
 
 /* Macros for accessing related registers. */
 #define TRA    ( *((volatile uint32_t *)(0xff000020)) ) /* TRAPA Exception Register */
@@ -30,6 +31,25 @@
 #define IPRB   ( *((volatile uint16_t *)(0xffd00008)) ) /* Interrupt priority register A */
 #define IPRC   ( *((volatile uint16_t *)(0xffd0000c)) ) /* Interrupt priority register A */
 #define IPRD   ( *((volatile uint16_t *)(0xffd00010)) ) /* Interrupt priority register A */
+
+#define IPRA_TMU0       GENMASK(15, 12)
+#define IPRA_TMU1       GENMASK(11, 8)
+#define IPRA_TMU2       GENMASK(7, 4)
+#define IPRA_RTC        GENMASK(3, 0)
+
+#define IPRB_WDT        GENMASK(15, 12)
+#define IPRB_REF        GENMASK(11, 8)
+#define IPRB_SCI1       GENMASK(7, 4)
+
+#define IPRC_GPIO       GENMASK(15, 12)
+#define IPRC_DMAC       GENMASK(11, 8)
+#define IPRC_SCIF       GENMASK(7, 4)
+#define IPRC_HUDI       GENMASK(3, 0)
+
+#define IPRD_IRL0       GENMASK(15, 12)
+#define IPRD_IRL1       GENMASK(11, 8)
+#define IPRD_IRL2       GENMASK(7, 4)
+#define IPRD_IRL3       GENMASK(3, 0)
 
 /* IRQ handler closure */
 struct irq_cb {
@@ -402,8 +422,8 @@ int irq_init(void) {
     /* Set a default FPU exception handler */
     irq_set_handler(EXC_FPU, irq_def_fpu, NULL);
 
-    /* Unmask DMA IRQs */
-    IPRC = 0x300;
+    /* Unmask DMA IRQs, set priority of 3 */
+    IPRC = FIELD_PREP(IPRC_DMAC, 3);
 
     /* Set a default context (will be superseded if threads are
        enabled later) */
@@ -429,6 +449,9 @@ int irq_init(void) {
 void irq_shutdown(void) {
     if(!initted)
         return;
+
+    /* Disable DMA IRQs */
+    IPRC = 0;
 
     /* Restore SR and VBR */
     __asm__("mov.l  %0,r0\n"
