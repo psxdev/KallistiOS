@@ -165,13 +165,9 @@ export KOS_CFLAGS="${KOS_CFLAGS} -fomit-frame-pointer"
 
 # GCC Builtin Functions
 #
-# Comment out this line to enable GCC to use its own builtin implementations of
-# certain standard library functions. Under certain conditions, this can allow
-# compiler-optimized implementations to replace standard function invocations.
-# The downside of this is that it COULD interfere with Newlib or KOS implementations
-# of these functions, and it has not been tested thoroughly to ensure compatibility.
-#
-export KOS_CFLAGS="${KOS_CFLAGS} -fno-builtin"
+# Uncomment this line to prevent GCC from using its own builtin implementations
+# of certain standard library functions.
+#export KOS_CFLAGS="${KOS_CFLAGS} -fno-builtin"
 
 # Fast Math Instructions
 #
