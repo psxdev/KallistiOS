@@ -59,7 +59,7 @@ typedef uint32_t sfxhnd_t;
     This structure is used to pass data to the extended version of sound effect
     playback functions.
 */
-typedef struct sfxplaydata {
+typedef struct sfx_play_data {
     int chn;        /**< \brief The channel to play on. If chn == -1, the next
                             available channel will be used automatically. */
     sfxhnd_t idx;   /**< \brief The handle to the sound effect to play. */
@@ -68,7 +68,8 @@ typedef struct sfxplaydata {
                             the way to the left, 128 is center, 255 is all the way
                             to the right. */
     int loop;       /**< \brief Whether to loop the sound effect or not. */
-} sfxplaydata_t;
+    int freq;       /**< \brief Frequency */
+} sfx_play_data_t;
 
 /** \brief  Load a sound effect.
 
@@ -215,15 +216,15 @@ int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan);
     This function plays a sound effect with the specified parameters. This is
     the extended version of the sound effect playback functions, and is used to
     pass a structure containing the parameters to the function. With this
-    function, you can additionally specify the loop flag, which will cause the
-    sound effect to loop until manually stopped.
+    function, you can additionally specify extra parameters such as frequency
+    and looping (see sfx_play_data_t structure).
 
     \param  data            The data structure containing the information needed
                             to play the sound effect.
 
     \return                 chn
 */
-int snd_sfx_play_ex(sfxplaydata_t *data);
+int snd_sfx_play_ex(sfx_play_data_t *data);
 
 /** \brief  Stop a single channel of sound.
 

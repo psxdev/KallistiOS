@@ -719,7 +719,7 @@ err_occurred:
 }
 
 int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan) {
-    sfxplaydata_t data = {0};
+    sfx_play_data_t data = {0};
     data.chn = chn;
     data.idx = idx;
     data.vol = vol;
@@ -755,7 +755,7 @@ int find_free_channel(void) {
 }
 
 int snd_sfx_play(sfxhnd_t idx, int vol, int pan) {
-    sfxplaydata_t data = {0};
+    sfx_play_data_t data = {0};
     data.chn = -1;
     data.idx = idx;
     data.vol = vol;
@@ -763,7 +763,7 @@ int snd_sfx_play(sfxhnd_t idx, int vol, int pan) {
     return snd_sfx_play_ex(&data);
 }
 
-int snd_sfx_play_ex(sfxplaydata_t *data) {
+int snd_sfx_play_ex(sfx_play_data_t *data) {
     if (data->chn < 0) {
         data->chn = find_free_channel();
         if (data->chn < 0) {
@@ -790,7 +790,7 @@ int snd_sfx_play_ex(sfxplaydata_t *data) {
     chan->loop = data->loop;
     chan->loopstart = 0;
     chan->loopend = size;
-    chan->freq = t->rate;
+    chan->freq = data->freq > 0 ? data->freq : t->rate;
     chan->vol = data->vol;
 
     if(!t->stereo) {
