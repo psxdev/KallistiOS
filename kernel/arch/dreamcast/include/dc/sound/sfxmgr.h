@@ -54,6 +54,22 @@ typedef uint32_t sfxhnd_t;
 */
 #define SFXHND_INVALID 0
 
+/** \brief  Data structure for sound effect playback.
+
+    This structure is used to pass data to the extended version of sound effect
+    playback functions.
+*/
+typedef struct sfxplaydata {
+    int chn;        /**< \brief The channel to play on. If chn == -1, the next
+                            available channel will be used automatically. */
+    sfxhnd_t idx;   /**< \brief The handle to the sound effect to play. */
+    int vol;        /**< \brief The volume to play at (between 0 and 255). */
+    int pan;        /**< \brief The panning value of the sound effect. 0 is all
+                            the way to the left, 128 is center, 255 is all the way
+                            to the right. */
+    int loop;       /**< \brief Whether to loop the sound effect or not. */
+} sfxplaydata_t;
+
 /** \brief  Load a sound effect.
 
     This function loads a sound effect from a WAV file and returns a handle to
@@ -176,25 +192,6 @@ void snd_sfx_unload_all(void);
 */
 int snd_sfx_play(sfxhnd_t idx, int vol, int pan);
 
-/** \brief  Play a sound effect with looping.
-
-    This function plays a loaded sound effect with the specified volume (for
-    both stereo or mono) and panning values (for mono sounds only).
-
-    \param  idx             The handle to the sound effect to play.
-    \param  vol             The volume to play at (between 0 and 255).
-    \param  pan             The panning value of the sound effect. 0 is all the
-                            way to the left, 128 is center, 255 is all the way
-                            to the right.
-    \param  loop            Whether to loop the sound effect or not.
-
-    \return                 The channel used to play the sound effect (or the
-                            left channel in the case of a stereo sound, the
-                            right channel will be the next one) on success, or
-                            -1 on failure.
-*/
-int snd_sfx_play_lp(sfxhnd_t idx, int vol, int pan, int loop);
-
 /** \brief  Play a sound effect on a specific channel.
 
     This function works similar to snd_sfx_play(), but allows you to specify the
@@ -213,24 +210,20 @@ int snd_sfx_play_lp(sfxhnd_t idx, int vol, int pan, int loop);
 */
 int snd_sfx_play_chn(int chn, sfxhnd_t idx, int vol, int pan);
 
-/** \brief  Play a sound effect on a specific channel with looping.
+/** \brief  Extended sound effect playback function.
 
-    This function works similar to snd_sfx_play(), but allows you to specify the
-    channel to play on. No error checking is done with regard to the channel, so
-    be sure its safe to play on that channel before trying.
+    This function plays a sound effect with the specified parameters. This is
+    the extended version of the sound effect playback functions, and is used to
+    pass a structure containing the parameters to the function. With this
+    function, you can additionally specify the loop flag, which will cause the
+    sound effect to loop until manually stopped.
 
-    \param  chn             The channel to play on (or in the case of stereo,
-                            the left channel).
-    \param  idx             The handle to the sound effect to play.
-    \param  vol             The volume to play at (between 0 and 255).
-    \param  pan             The panning value of the sound effect. 0 is all the
-                            way to the left, 128 is center, 255 is all the way
-                            to the right.
-    \param  loop            Whether to loop the sound effect or not.
+    \param  data            The data structure containing the information needed
+                            to play the sound effect.
 
     \return                 chn
 */
-int snd_sfx_play_chn_lp(int chn, sfxhnd_t idx, int vol, int pan, int loop);
+int snd_sfx_play_ex(sfxplaydata_t *data);
 
 /** \brief  Stop a single channel of sound.
 
