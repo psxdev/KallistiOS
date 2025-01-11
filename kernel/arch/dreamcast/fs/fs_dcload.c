@@ -115,6 +115,7 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
     int hnd = 0;
     int dcload_mode = 0;
     int mm = (mode & O_MODE_MASK);
+    size_t fn_len = 0;
 
     (void)vfs;
 
@@ -146,21 +147,26 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
             return (void *)NULL;
         }
 
-        entry->hnd = hnd;
-        LIST_INSERT_HEAD(&dir_head, entry, fhlist);
-
         if(dcload_path)
             free(dcload_path);
 
-        if(fn[strlen(fn) - 1] == '/') {
-            dcload_path = malloc(strlen(fn) + 1);
-            strcpy(dcload_path, fn);
+        fn_len = strlen(fn);
+        if(fn[fn_len - 1] == '/') fn_len--;
+
+        dcload_path = malloc(fn_len + 2);
+        if(!dcload_path) {
+            errno = ENOMEM;
+            free(entry);
+            return (void *)NULL;
         }
-        else {
-            dcload_path = malloc(strlen(fn) + 2);
-            strcpy(dcload_path, fn);
-            strcat(dcload_path, "/");
-        }
+
+        memcpy(dcload_path, fn, fn_len);
+        dcload_path[fn_len]   = '/';
+        dcload_path[fn_len+1] = '\0';
+
+        /* Now that everything is ready, add to list */
+        entry->hnd = hnd;
+        LIST_INSERT_HEAD(&dir_head, entry, fhlist);
     }
     else {
         if(mm == O_RDONLY)
