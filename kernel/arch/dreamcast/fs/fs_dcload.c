@@ -274,12 +274,12 @@ static dirent_t *dcload_readdir(void * h) {
     uint32 hnd = (uint32)h;
     dcl_dir_t *entry;
 
+    spinlock_lock_scoped(&mutex);
+
     if(!(entry = hnd_is_dir(hnd))) {
         errno = EBADF;
         return NULL;
     }
-
-    spinlock_lock_scoped(&mutex);
 
     dcld = (dcload_dirent_t *)dclsc(DCLOAD_READDIR, hnd);
 
