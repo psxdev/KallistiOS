@@ -408,6 +408,17 @@ static int dcload_fcntl(void *h, int cmd, va_list ap) {
     return rv;
 }
 
+static int dcload_rewinddir(void *h) {
+    uint32_t hnd = (uint32_t)h;
+
+    spinlock_lock_scoped(&mutex);
+
+    if(!hnd_is_dir(hnd))
+        return -1;
+
+    return dclsc(DCLOAD_REWINDDIR, hnd);
+}
+
 /* Pull all that together */
 static vfs_handler_t vh = {
     /* Name handler */
@@ -446,7 +457,7 @@ static vfs_handler_t vh = {
     NULL,               /* tell64 */
     NULL,               /* total64 */
     NULL,               /* readlink */
-    NULL,               /* rewinddir */
+    dcload_rewinddir,
     NULL                /* fstat */
 };
 
