@@ -37,6 +37,7 @@ printf goes to the dc-tool console
 typedef struct dcl_dir {
     LIST_ENTRY(dcl_dir) fhlist;
     int hnd;  /* Actually a DIR* but on the host side */
+    char *path;
 } dcl_dir_t;
 
 LIST_HEAD(dcl_de, dcl_dir);
@@ -109,8 +110,8 @@ size_t dcload_gdbpacket(const char* in_buf, size_t in_size, char* out_buf, size_
     return dclsc(DCLOAD_GDBPACKET, in_buf, (in_size << 16) | (out_size & 0xffff), out_buf);
 }
 
-static char *dcload_path = NULL;
 void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
+    char *dcload_path = NULL;
     dcl_dir_t *entry;
     int hnd = 0;
     int dcload_mode = 0;
@@ -147,9 +148,6 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
             return (void *)NULL;
         }
 
-        if(dcload_path)
-            free(dcload_path);
-
         fn_len = strlen(fn);
         if(fn[fn_len - 1] == '/') fn_len--;
 
@@ -166,6 +164,7 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
 
         /* Now that everything is ready, add to list */
         entry->hnd = hnd;
+        entry->path = dcload_path;
         LIST_INSERT_HEAD(&dir_head, entry, fhlist);
     }
     else {
@@ -208,6 +207,7 @@ int dcload_close(void * h) {
         if(!i) {
             dclsc(DCLOAD_CLOSEDIR, hnd);
             LIST_REMOVE(i, fhlist);
+            free(i->path);
             free(i);
         }
         else {
@@ -315,13 +315,14 @@ dirent_t *dcload_readdir(void * h) {
     dcload_stat_t filestat;
     char *fn;
     uint32 hnd = (uint32)h;
+    dcl_dir_t *entry;
 
     if(lwip_dclsc && irq_inside_int()) {
         errno = EAGAIN;
         return NULL;
     }
 
-    if(!hnd_is_dir(hnd)) {
+    if(!(entry = hnd_is_dir(hnd))) {
         errno = EBADF;
         return NULL;
     }
@@ -337,8 +338,8 @@ dirent_t *dcload_readdir(void * h) {
         rv->time = 0;
         rv->attr = 0; /* what the hell is attr supposed to be anyways? */
 
-        fn = malloc(strlen(dcload_path) + strlen(dcld->d_name) + 1);
-        strcpy(fn, dcload_path);
+        fn = malloc(strlen(entry->path) + strlen(dcld->d_name) + 1);
+        strcpy(fn, entry->path);
         strcat(fn, dcld->d_name);
 
         if(!dclsc(DCLOAD_STAT, fn, &filestat)) {
