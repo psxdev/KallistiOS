@@ -31,6 +31,30 @@ printf goes to the dc-tool console
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
+#include <sys/queue.h>
+
+/* A linked list of dir entries. */
+typedef struct dcl_dir {
+    LIST_ENTRY(dcl_dir) fhlist;
+    int hnd;  /* Actually a DIR* but on the host side */
+} dcl_dir_t;
+
+LIST_HEAD(dcl_de, dcl_dir);
+
+static struct dcl_de dir_head = LIST_HEAD_INITIALIZER(0);
+
+static dcl_dir_t *hnd_is_dir(int hnd) {
+    dcl_dir_t *i;
+
+    if(!hnd) return NULL;
+
+    LIST_FOREACH(i, &dir_head, fhlist) {
+        if(i->hnd == (int)hnd)
+            break;
+    }
+
+    return i;
+}
 
 static spinlock_t mutex = SPINLOCK_INITIALIZER;
 
@@ -87,6 +111,7 @@ size_t dcload_gdbpacket(const char* in_buf, size_t in_size, char* out_buf, size_
 
 static char *dcload_path = NULL;
 void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
+    dcl_dir_t *entry;
     int hnd = 0;
     int dcload_mode = 0;
     int mm = (mode & O_MODE_MASK);
@@ -105,22 +130,39 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
 
         hnd = dclsc(DCLOAD_OPENDIR, fn);
 
-        if(hnd) {
-            if(dcload_path)
-                free(dcload_path);
+        if(!hnd) {
+            /* It could be caused by other issues, such as
+            pathname being too long or symlink loops, but
+            ENOTDIR seems to be the best generic and we should
+            set something */
+            errno = ENOTDIR;
+            return (void *)NULL;
+        }
 
-            if(fn[strlen(fn) - 1] == '/') {
-                dcload_path = malloc(strlen(fn) + 1);
-                strcpy(dcload_path, fn);
-            }
-            else {
-                dcload_path = malloc(strlen(fn) + 2);
-                strcpy(dcload_path, fn);
-                strcat(dcload_path, "/");
-            }
+        /* We got something back so create an dir list entry for it */
+        entry = malloc(sizeof(dcl_dir_t));
+        if(!entry) {
+            errno = ENOMEM;
+            return (void *)NULL;
+        }
+
+        entry->hnd = hnd;
+        LIST_INSERT_HEAD(&dir_head, entry, fhlist);
+
+        if(dcload_path)
+            free(dcload_path);
+
+        if(fn[strlen(fn) - 1] == '/') {
+            dcload_path = malloc(strlen(fn) + 1);
+            strcpy(dcload_path, fn);
+        }
+        else {
+            dcload_path = malloc(strlen(fn) + 2);
+            strcpy(dcload_path, fn);
+            strcat(dcload_path, "/");
         }
     }
-    else {   /* hack */
+    else {
         if(mm == O_RDONLY)
             dcload_mode = 0;
         else if((mm & O_RDWR) == O_RDWR)
@@ -143,6 +185,7 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
 
 int dcload_close(void * h) {
     uint32 hnd = (uint32)h;
+    dcl_dir_t *i;
 
     if(lwip_dclsc && irq_inside_int()) {
         errno = EINTR;
@@ -152,8 +195,15 @@ int dcload_close(void * h) {
     spinlock_lock_scoped(&mutex);
 
     if(hnd) {
-        if(hnd > 100)  /* hack */
+        /* Check if it's a dir */
+        i = hnd_is_dir(hnd);
+
+        /* We found it in the list, so it's a DIR */
+        if(!i) {
             dclsc(DCLOAD_CLOSEDIR, hnd);
+            LIST_REMOVE(i, fhlist);
+            free(i);
+        }
         else {
             hnd--; /* KOS uses 0 for error, not -1 */
             dclsc(DCLOAD_CLOSE, hnd);
@@ -265,7 +315,7 @@ dirent_t *dcload_readdir(void * h) {
         return NULL;
     }
 
-    if(hnd < 100) {
+    if(!hnd_is_dir(hnd)) {
         errno = EBADF;
         return NULL;
     }
