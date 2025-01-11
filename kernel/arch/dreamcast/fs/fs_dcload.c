@@ -38,6 +38,7 @@ typedef struct dcl_dir {
     LIST_ENTRY(dcl_dir) fhlist;
     int hnd;  /* Actually a DIR* but on the host side */
     char *path;
+    dirent_t dirent;
 } dcl_dir_t;
 
 LIST_HEAD(dcl_de, dcl_dir);
@@ -264,8 +265,6 @@ static size_t dcload_total(void * h) {
     return ret;
 }
 
-/* Not thread-safe, but that's ok because neither is the FS */
-static dirent_t dirent;
 static dirent_t *dcload_readdir(void * h) {
     dirent_t *rv = NULL;
     dcload_dirent_t *dcld;
@@ -284,7 +283,7 @@ static dirent_t *dcload_readdir(void * h) {
     dcld = (dcload_dirent_t *)dclsc(DCLOAD_READDIR, hnd);
 
     if(dcld) {
-        rv = &dirent;
+        rv = &(entry->dirent);
         strcpy(rv->name, dcld->d_name);
         rv->size = 0;
         rv->time = 0;
