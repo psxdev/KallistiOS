@@ -90,7 +90,7 @@ size_t dcload_gdbpacket(const char* in_buf, size_t in_size, char* out_buf, size_
     return dclsc(DCLOAD_GDBPACKET, in_buf, (in_size << 16) | (out_size & 0xffff), out_buf);
 }
 
-void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
+static void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
     char *dcload_path = NULL;
     dcl_dir_t *entry;
     int hnd = 0;
@@ -165,7 +165,7 @@ void *dcload_open(vfs_handler_t * vfs, const char *fn, int mode) {
     return (void *)hnd;
 }
 
-int dcload_close(void * h) {
+static int dcload_close(void * h) {
     uint32 hnd = (uint32)h;
     dcl_dir_t *i;
 
@@ -191,7 +191,7 @@ int dcload_close(void * h) {
     return 0;
 }
 
-ssize_t dcload_read(void * h, void *buf, size_t cnt) {
+static ssize_t dcload_read(void * h, void *buf, size_t cnt) {
     ssize_t ret = -1;
     uint32 hnd = (uint32)h;
 
@@ -205,7 +205,7 @@ ssize_t dcload_read(void * h, void *buf, size_t cnt) {
     return ret;
 }
 
-ssize_t dcload_write(void * h, const void *buf, size_t cnt) {
+static ssize_t dcload_write(void * h, const void *buf, size_t cnt) {
     ssize_t ret = -1;
     uint32 hnd = (uint32)h;
 
@@ -219,7 +219,7 @@ ssize_t dcload_write(void * h, const void *buf, size_t cnt) {
     return ret;
 }
 
-off_t dcload_seek(void * h, off_t offset, int whence) {
+static off_t dcload_seek(void * h, off_t offset, int whence) {
     off_t ret = -1;
     uint32 hnd = (uint32)h;
 
@@ -233,7 +233,7 @@ off_t dcload_seek(void * h, off_t offset, int whence) {
     return ret;
 }
 
-off_t dcload_tell(void * h) {
+static off_t dcload_tell(void * h) {
     off_t ret = -1;
     uint32 hnd = (uint32)h;
 
@@ -247,7 +247,7 @@ off_t dcload_tell(void * h) {
     return ret;
 }
 
-size_t dcload_total(void * h) {
+static size_t dcload_total(void * h) {
     size_t ret = -1;
     size_t cur;
     uint32 hnd = (uint32)h;
@@ -266,7 +266,7 @@ size_t dcload_total(void * h) {
 
 /* Not thread-safe, but that's ok because neither is the FS */
 static dirent_t dirent;
-dirent_t *dcload_readdir(void * h) {
+static dirent_t *dcload_readdir(void * h) {
     dirent_t *rv = NULL;
     dcload_dirent_t *dcld;
     dcload_stat_t filestat;
@@ -312,7 +312,7 @@ dirent_t *dcload_readdir(void * h) {
     return rv;
 }
 
-int dcload_rename(vfs_handler_t * vfs, const char *fn1, const char *fn2) {
+static int dcload_rename(vfs_handler_t * vfs, const char *fn1, const char *fn2) {
     int ret;
 
     (void)vfs;
@@ -329,7 +329,7 @@ int dcload_rename(vfs_handler_t * vfs, const char *fn1, const char *fn2) {
     return ret;
 }
 
-int dcload_unlink(vfs_handler_t * vfs, const char *fn) {
+static int dcload_unlink(vfs_handler_t * vfs, const char *fn) {
     (void)vfs;
 
     spinlock_lock_scoped(&mutex);
