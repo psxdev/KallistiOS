@@ -4,6 +4,7 @@
    Copyright (C) 2002 Andrew Kieschnick
    Copyright (C) 2004 Megan Potter
    Copyright (C) 2012 Lawrence Sebald
+   Copyright (C) 2025 Donald Haase
 
 */
 
@@ -19,24 +20,21 @@ printf goes to the dc-tool console
 
 #include <dc/fifo.h>
 #include <dc/fs_dcload.h>
-#include <kos/thread.h>
 #include <arch/spinlock.h>
-#include <arch/arch.h>
 #include <kos/dbgio.h>
 #include <kos/fs.h>
+#include <kos/init.h>
 
 #include <errno.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
 #include <malloc.h>
-#include <errno.h>
 #include <sys/queue.h>
 
 /* A linked list of dir entries. */
 typedef struct dcl_dir {
     LIST_ENTRY(dcl_dir) fhlist;
-    int hnd;  /* Actually a DIR* but on the host side */
+    int hnd;
     char *path;
     dirent_t dirent;
 } dcl_dir_t;
@@ -176,7 +174,7 @@ static int dcload_close(void * h) {
         /* Check if it's a dir */
         i = hnd_is_dir(hnd);
 
-        /* We found it in the list, so it's a DIR */
+        /* We found it in the list, so it's a dir */
         if(!i) {
             dclsc(DCLOAD_CLOSEDIR, hnd);
             LIST_REMOVE(i, fhlist);
@@ -460,8 +458,8 @@ static vfs_handler_t vh = {
     NULL                /* fstat */
 };
 
-// We have to provide a minimal interface in case dcload usage is
-// disabled through init flags.
+/* We have to provide a minimal interface in case dcload usage is
+   disabled through init flags. */
 static int never_detected(void) {
     return 0;
 }
@@ -501,8 +499,8 @@ void fs_dcload_init_console(void) {
     dbgio_dcload.write_buffer = dcload_write_buffer;
     // dbgio_dcload.read = dcload_read_cons;
 
-    // We actually need to detect here to make sure we're not on
-    // dcload-serial, or scif_init must not proceed.
+    /* We actually need to detect here to make sure we're not on
+       dcload-serial, or scif_init must not proceed. */
     if(*DCLOADMAGICADDR != DCLOADMAGICVALUE)
         return;
 
