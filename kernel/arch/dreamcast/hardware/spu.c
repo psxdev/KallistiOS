@@ -87,12 +87,12 @@ void spu_memload_sq(uintptr_t dst, void *src_void, size_t length) {
     /* Lock the SQs before disabling the interrupts. */
     sq_lock(NULL);
 
-    /* Make sure the FIFOs are empty */
-    g2_fifo_wait();
-
     /* Lock G2 bus because we can't suspend SQs from
      * another thread with PIO access to G2 bus. */
     ctx = g2_lock();
+
+    /* Make sure the FIFOs are empty */
+    g2_fifo_wait();
 
     sq_cpy((void *)dst, src, aligned_len);
 
@@ -229,12 +229,12 @@ void spu_memset_sq(uintptr_t dst, uint32_t what, size_t length) {
     /* Lock the SQs before disabling the interrupts. */
     sq_lock(NULL);
 
-    /* Make sure the FIFOs are empty */
-    g2_fifo_wait();
-
     /* Lock G2 bus because we can't suspend SQs from
      * another thread with PIO access to G2 bus. */
     ctx = g2_lock();
+
+    /* Make sure the FIFOs are empty */
+    g2_fifo_wait();
 
     sq_set32((void *)dst, what, aligned_len);
 
@@ -257,8 +257,9 @@ void spu_reset_chans(void) {
     int i;
     g2_ctx_t ctx;
 
-    g2_fifo_wait();
     ctx = g2_lock();
+    g2_fifo_wait();
+
     g2_write_32_raw(SNDREGADDR(0x2800), 0);
 
     for(i = 0; i < 64; i++) {
