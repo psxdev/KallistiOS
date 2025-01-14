@@ -106,12 +106,9 @@ void perf_cntr_timer_disable(void) {
 }
 
 uint64_t perf_cntr_timer_ns(void) {
-    /* Grab value first, before checking, to not record overhead. */
-    const uint64_t count = perf_cntr_count(PRFC0);
-
     /* If timer is configured and is running, use perf counters. */
-    if(perf_cntr_timer_enabled()) 
-        return count * NS_PER_CYCLE;
+    if(perf_cntr_timer_enabled())
+        return perf_cntr_count(PRFC0) * NS_PER_CYCLE;
     else /* Otherwise fall-through to TMU2. */
         return timer_ns_gettime64();
 }
