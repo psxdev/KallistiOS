@@ -27,29 +27,8 @@
 #define EXPEVT ( *((volatile uint32_t *)(0xff000024)) ) /* Exception Event Register */
 #define INTEVT ( *((volatile uint32_t *)(0xff000028)) ) /* Interrupt Event Register */
 
-#define IPRA   ( *((volatile uint16_t *)(0xffd00004)) ) /* Interrupt priority register A */
-#define IPRB   ( *((volatile uint16_t *)(0xffd00008)) ) /* Interrupt priority register A */
-#define IPRC   ( *((volatile uint16_t *)(0xffd0000c)) ) /* Interrupt priority register A */
-#define IPRD   ( *((volatile uint16_t *)(0xffd00010)) ) /* Interrupt priority register A */
-
-#define IPRA_TMU0       GENMASK(15, 12)
-#define IPRA_TMU1       GENMASK(11, 8)
-#define IPRA_TMU2       GENMASK(7, 4)
-#define IPRA_RTC        GENMASK(3, 0)
-
-#define IPRB_WDT        GENMASK(15, 12)
-#define IPRB_REF        GENMASK(11, 8)
-#define IPRB_SCI1       GENMASK(7, 4)
-
-#define IPRC_GPIO       GENMASK(15, 12)
-#define IPRC_DMAC       GENMASK(11, 8)
-#define IPRC_SCIF       GENMASK(7, 4)
-#define IPRC_HUDI       GENMASK(3, 0)
-
-#define IPRD_IRL0       GENMASK(15, 12)
-#define IPRD_IRL1       GENMASK(11, 8)
-#define IPRD_IRL2       GENMASK(7, 4)
-#define IPRD_IRL3       GENMASK(3, 0)
+/* Interrupt priority registers */
+#define REG_IPR(x) ( *((volatile uint16_t *)(0xffd00004 + (x) * 4)) )
 
 /* IRQ handler closure */
 struct irq_cb {
@@ -423,7 +402,7 @@ int irq_init(void) {
     irq_set_handler(EXC_FPU, irq_def_fpu, NULL);
 
     /* Unmask DMA IRQs, set priority of 3 */
-    IPRC = FIELD_PREP(IPRC_DMAC, 3);
+    irq_set_priority(IRQ_SRC_DMAC, 3);
 
     /* Set a default context (will be superseded if threads are
        enabled later) */
@@ -451,7 +430,7 @@ void irq_shutdown(void) {
         return;
 
     /* Disable DMA IRQs */
-    IPRC = 0;
+    irq_set_priority(IRQ_SRC_DMAC, IRQ_PRIO_MASKED);
 
     /* Restore SR and VBR */
     __asm__("mov.l  %0,r0\n"
@@ -460,4 +439,22 @@ void irq_shutdown(void) {
             "ldc    r0,vbr" : : "m"(pre_vbr));
 
     initted = false;
+}
+
+void irq_set_priority(irq_src_t src, unsigned int prio) {
+    uint16_t ipr;
+
+    if (prio > IRQ_PRIO_MAX)
+        prio = IRQ_PRIO_MAX;
+
+    irq_disable_scoped();
+
+    ipr = REG_IPR(src / 4);
+    ipr &= ~(0xf << (src % 4) * 4);
+    ipr |= prio << (src % 4) * 4;
+    REG_IPR(src / 4) = ipr;
+}
+
+unsigned int irq_get_priority(irq_src_t src) {
+    return (REG_IPR(src / 4) >> (src % 4) * 4) & 0xf;
 }
