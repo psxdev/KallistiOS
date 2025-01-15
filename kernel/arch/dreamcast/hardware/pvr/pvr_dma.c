@@ -106,7 +106,7 @@ static const dma_config_t pvr_dma_config = {
 int pvr_dma_transfer(const void *src, uintptr_t dest, size_t count,
                      pvr_dma_type_t type, bool block,
                      pvr_dma_callback_t callback, void *cbdata) {
-    dma_addr_t src_addr = hw_to_dma_addr((uintptr_t)src);
+    dma_addr_t src_addr = dma_map_src(src, count);
 
     /* Check for 32-byte alignment */
     if(src_addr & 0x1F) {
