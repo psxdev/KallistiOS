@@ -309,6 +309,20 @@ int irq_inside_int(void);
 
 /** Type representing an interrupt mask state. */
 typedef uint32_t irq_mask_t;
+
+/** Get status register contents.
+
+    Returns the current value of the status register, as irq_disable() does.
+    The function can be found in arch\dreamcast\kernel\entry.s
+
+    \note
+    This is the entire status register word, not just the `IMASK` field.
+
+    \retval                 Status register word
+    \sa irq_disable()
+*/
+irq_mask_t irq_get_sr(void);
+
 /** Disable interrupts.
 
     This function will disable interrupts, but will leave exceptions enabled.
