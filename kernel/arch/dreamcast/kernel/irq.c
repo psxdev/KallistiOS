@@ -30,12 +30,6 @@
 /* Interrupt priority registers */
 #define REG_IPR(x) ( *((volatile uint16_t *)(0xffd00004 + (x) * 4)) )
 
-/* IRQ handler closure */
-struct irq_cb {
-    irq_handler hdl;
-    void       *data;
-};
-
 /* TRAPA handler closure */
 struct trapa_cb {
     trapa_handler hdl;
@@ -43,13 +37,13 @@ struct trapa_cb {
 };
 
 /* Individual exception handlers */
-static struct irq_cb   irq_handlers[0x40];
+static irq_cb_t        irq_handlers[0x40];
 /* TRAPA exception handlers */
 static struct trapa_cb trapa_handlers[0x100];
 
 /* Global exception handler -- hook this if you want to get each and every
    exception; you might get more than you bargained for, but it can be useful. */
-static struct irq_cb   global_irq_handler;
+static irq_cb_t        global_irq_handler;
 
 /* Default IRQ context location */
 static irq_context_t   irq_context_default;
@@ -73,14 +67,14 @@ int irq_set_handler(irq_t code, irq_handler hnd, void *data) {
 }
 
 /* Get the address of the current handler */
-irq_handler irq_get_handler(irq_t code) {
+irq_cb_t irq_get_handler(irq_t code) {
     /* Make sure they don't do something crackheaded */
     if(code >= 0x1000 || (code & 0x000f))
         return NULL;
 
     code >>= 5;
 
-    return irq_handlers[code].hdl;
+    return irq_handlers[code];
 }
 
 /* Set a global handler */
@@ -91,8 +85,8 @@ int irq_set_global_handler(irq_handler hnd, void *data) {
 }
 
 /* Get the global exception handler */
-irq_handler irq_get_global_handler(void) {
-    return global_irq_handler.hdl;
+irq_cb_t irq_get_global_handler(void) {
+    return global_irq_handler;
 }
 
 /* Set or remove a trapa handler */

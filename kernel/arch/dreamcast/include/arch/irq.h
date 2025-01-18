@@ -417,6 +417,16 @@ void irq_force_return(void);
 */
 typedef void (*irq_handler)(irq_t code, irq_context_t *context, void *data);
 
+
+/** The type of a full callback of an IRQ handler and userdata.
+
+    This type is used to set or get IRQ handlers and their data.
+*/
+typedef struct irq_cb {
+    irq_handler hdl;    /**< A pointer to a procedure to handle an exception. */
+    void       *data;   /**< A pointer that will be passed along to the callback. */
+} irq_cb_t;
+
 /** \defgroup irq_handlers_ind  Individual
     \brief                      API for managing individual IRQ handlers.
 
@@ -444,12 +454,13 @@ int irq_set_handler(irq_t code, irq_handler hnd, void *data);
 /** Get the address of the current handler for the IRQ type.
 
     \param  code            The IRQ type to look up.
-    
-    \return                 A pointer to the procedure to handle the exception.
+
+    \return                 The current handler for the IRQ type and
+                            its userdata.
 
     \sa irq_set_handler()
 */
-irq_handler irq_get_handler(irq_t code);
+irq_cb_t irq_get_handler(irq_t code);
 
 /** @} */
 
@@ -476,10 +487,10 @@ int irq_set_global_handler(irq_handler handler, void *data);
 
 /** Get the global exception handler.
 
-    \return                 The global exception handler set with
+    \return                 The global exception handler and userdata set with
                             irq_set_global_handler(), or NULL if none is set.
 */
-irq_handler irq_get_global_handler(void);
+irq_cb_t irq_get_global_handler(void);
 /** @} */
 
 /** @} */
