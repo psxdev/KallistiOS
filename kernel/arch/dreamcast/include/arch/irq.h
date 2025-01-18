@@ -26,6 +26,7 @@
 #ifndef __ARCH_IRQ_H
 #define __ARCH_IRQ_H
 
+#include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <sys/cdefs.h>
@@ -48,6 +49,15 @@ __BEGIN_DECLS
     interrupts are utilized by various KOS drivers and have higher-level APIs
     for hooking into them. Care must be taken to not interfere with the IRQ
     handling which is being done by in-use KOS drivers.
+
+    \note
+    The naming convention used by this API differs from that of the actual SH4
+    manual for historical reasons (it wasn't platform-specific). The SH4 manual
+    refers to the most general type of CPU events which result in a SW
+    callback as "exceptions," with "interrupts" and "general exceptions" being
+    subtypes of exceptions. This API uses the term "interrupt" and "exception"
+    interchangeably, except where it is explicitly noted that "SH4 interrupts"
+    or "SH4 general exceptions" are being referred to, more specifically.
 
     @{
 */
@@ -83,7 +93,8 @@ __BEGIN_DECLS
     The size of this structure should be less than or equal to the
     \ref REG_BYTE_CNT value.
 */
-typedef __attribute__((aligned(32))) struct irq_context {
+typedef struct irq_context {
+alignas(32)
     uint32_t  pc;         /**< Program counter */
     uint32_t  pr;         /**< Procedure register (aka return address) */
     uint32_t  gbr;        /**< Global base register (TLS segment ptr) */
@@ -170,11 +181,11 @@ void irq_create_context(irq_context_t *context, uint32_t stack_pointer,
 
 /** Interrupt exception codes
 
-   Dreamcast-specific exception codes. Used to identify the source or type of
-   an interrupt. Each exception code is of a certain "type" which dictates how the interrupt
-   is generated and handled.
+   SH-specific exception codes. Used to identify the source or type of an
+   interrupt. Each exception code is of a certain "type" which dictates how the
+   interrupt is generated and handled.
 
-    List of exception types:
+   List of exception types:
 
    |Type    | Description
    |--------|------------
@@ -325,11 +336,12 @@ irq_mask_t irq_get_sr(void);
 
 /** Disable interrupts.
 
-    This function will disable interrupts, but will leave exceptions enabled.
+    This function will disable SH4 interrupts, but will leave SH4 general
+    exceptions enabled.
 
-    \return                 The state of IRQs before calling the function. This
-                            can be used to restore this state later on with
-                            irq_restore().
+    \return                 The state of the SH4 interrupts before calling the
+                            function. This can be used to restore this state
+                            later on with irq_restore().
 
     \sa irq_restore(), irq_enable()
 */
@@ -354,6 +366,14 @@ void irq_enable(void);
     \sa irq_disable()
 */
 void irq_restore(irq_mask_t v);
+
+/** \brief  Disable interrupts with scope management.
+
+    This macro will disable interrupts, similarly to irq_disable(), with the
+    difference that the interrupt state will automatically be restored once the
+    execution exits the functional block in which the macro was called.
+*/
+#define irq_disable_scoped() __irq_disable_scoped(__LINE__)
 
 /** @} */
 
@@ -491,14 +511,6 @@ static inline void __irq_scoped_cleanup(int *state) {
 
 #define __irq_disable_scoped(l) ___irq_disable_scoped(l)
 /** \endcond */
-
-/** \brief  Disable interrupts with scope management.
-
-    This macro will disable interrupts, similarly to irq_disable(), with the
-    difference that the interrupt state will automatically be restored once the
-    execution exits the functional block in which the macro was called.
-*/
-#define irq_disable_scoped() __irq_disable_scoped(__LINE__)
 
 /** \brief  Minimum/maximum values for IRQ priorities
 
