@@ -87,4 +87,4 @@ After following this guide, the toolchains should be ready.
 
 Now it's time to compile **KallistiOS**.
 
-You may consult the [`README`](../../../doc/README) file from KallistiOS now.
+You may consult the [`README`](../../../doc/README.md) file from KallistiOS now.
