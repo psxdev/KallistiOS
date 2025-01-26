@@ -6,7 +6,7 @@ programming.
 
 This script was adapted from earlier `dc-chain` scripts created by James
 Sumners and Jim Ursetto in the early days of the Dreamcast homebrew scene, but
-the utility has been [largely expanded and reworked](doc/changelog.txt) by many
+the utility has been [largely expanded and reworked](doc/CHANGELOG.md) by many
 [contributors](doc/CONTRIBUTORS.md) since then, and it is now included as part
 of **KallistiOS** (**KOS**).
 
