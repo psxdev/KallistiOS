@@ -161,7 +161,7 @@ make distclean
 ## Finished
 
 Once the toolchains have been compiled, you are ready to build KallistiOS
-itself. See the [KallistiOS documentation](../../doc/README) for further
+itself. See the [KallistiOS documentation](../../doc/README.md) for further
 instructions. If you installed `gdb` with your toolchain, you will also want to
 build the `dcload/dc-tool` debug link utilities to perform remote debugging of
 **Dreamcast** programs. Further details can be found in the documentation for
