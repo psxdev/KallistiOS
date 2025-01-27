@@ -12,6 +12,7 @@
 #include "pvr_internal.h"
 
 #include <kos/genwait.h>
+#include <kos/regfield.h>
 
 #ifdef PVR_RENDER_DBG
 #include <stdio.h>
@@ -35,8 +36,8 @@ static void dma_next_list(void *thread) {
     // DBG(("dma_next_list\n"));
 
     for(i = 0; i < PVR_OPB_COUNT; i++) {
-        if((pvr_state.lists_enabled & (1 << i))
-                && !(pvr_state.lists_dmaed & (1 << i))) {
+        if((pvr_state.lists_enabled & BIT(i))
+                && !(pvr_state.lists_dmaed & BIT(i))) {
             // Get the buffers for this frame.
             b = pvr_state.dma_buffers + (pvr_state.ram_target ^ 1);
 
@@ -45,7 +46,7 @@ static void dma_next_list(void *thread) {
                (because we submitted it directly, for example),
                mark it as complete, so we skip trying to DMA it. */
             if(!b->base[i]) {
-                pvr_state.lists_dmaed       |= 1 << i;
+                pvr_state.lists_dmaed |= BIT(i);
                 continue;
             }
 
@@ -56,7 +57,7 @@ static void dma_next_list(void *thread) {
             pvr_dma_load_ta(b->base[i], b->ptr[i], 0, dma_next_list, thread);
 
             // Mark this list as done, and break out for now.
-            pvr_state.lists_dmaed |= 1 << i;
+            pvr_state.lists_dmaed |= BIT(i);
             did++;
 
             break;
@@ -166,20 +167,20 @@ void pvr_int_handler(uint32 code, void *data) {
     switch(code) {
         case ASIC_EVT_PVR_OPAQUEDONE:
             //DBG(("irq_opaquedone\n"));
-            pvr_state.lists_transferred |= 1 << PVR_OPB_OP;
+            pvr_state.lists_transferred |= BIT(PVR_OPB_OP);
             break;
         case ASIC_EVT_PVR_TRANSDONE:
             //DBG(("irq_transdone\n"));
-            pvr_state.lists_transferred |= 1 << PVR_OPB_TP;
+            pvr_state.lists_transferred |= BIT(PVR_OPB_TP);
             break;
         case ASIC_EVT_PVR_OPAQUEMODDONE:
-            pvr_state.lists_transferred |= 1 << PVR_OPB_OM;
+            pvr_state.lists_transferred |= BIT(PVR_OPB_OM);
             break;
         case ASIC_EVT_PVR_TRANSMODDONE:
-            pvr_state.lists_transferred |= 1 << PVR_OPB_TM;
+            pvr_state.lists_transferred |= BIT(PVR_OPB_TM);
             break;
         case ASIC_EVT_PVR_PTDONE:
-            pvr_state.lists_transferred |= 1 << PVR_OPB_PT;
+            pvr_state.lists_transferred |= BIT(PVR_OPB_PT);
             break;
         case ASIC_EVT_PVR_RENDERDONE_TSP:
             //DBG(("irq_renderdone\n"));
