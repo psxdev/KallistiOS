@@ -30,16 +30,15 @@
 // Find the next list to DMA out. If we have none left to do, then do
 // nothing. Otherwise, start the DMA and chain back to us upon completion.
 static void dma_next_list(void *thread) {
-    int i, did = 0;
     volatile pvr_dma_buffers_t * b;
+    unsigned int i;
 
-    // DBG(("dma_next_list\n"));
+    // Get the buffers for this frame.
+    b = pvr_state.dma_buffers + (pvr_state.ram_target ^ 1);
 
     for(i = 0; i < PVR_OPB_COUNT; i++) {
         if((pvr_state.lists_enabled & BIT(i))
                 && !(pvr_state.lists_dmaed & BIT(i))) {
-            // Get the buffers for this frame.
-            b = pvr_state.dma_buffers + (pvr_state.ram_target ^ 1);
 
             /* If we are in PVR DMA mode, yet we haven't associated a
                RAM-residing vertex buffer with the current list
@@ -51,35 +50,26 @@ static void dma_next_list(void *thread) {
             }
 
             // Start the DMA transfer, chaining to ourselves.
-            //DBG(("dma_begin(buf %d, list %d, base %p, len %d)\n",
-            //  pvr_state.ram_target ^ 1, i,
-            //  b->base[i], b->ptr[i]));
             pvr_dma_load_ta(b->base[i], b->ptr[i], 0, dma_next_list, thread);
 
             // Mark this list as done, and break out for now.
             pvr_state.lists_dmaed |= BIT(i);
-            did++;
 
-            break;
+            return;
         }
     }
 
     // If that was the last one, then free up the DMA channel.
-    if(!did) {
-        //DBG(("dma_complete(buf %d)\n", pvr_state.ram_target ^ 1));
+    pvr_state.lists_dmaed = 0;
 
-        // If that was the last one, then free up the DMA channel.
-        pvr_state.lists_dmaed = 0;
+    // Unlock
+    if(irq_inside_int())
+        mutex_unlock_as_thread((mutex_t *)&pvr_state.dma_lock, thread);
+    else
+        mutex_unlock((mutex_t *)&pvr_state.dma_lock);
 
-        // Unlock
-        if(irq_inside_int())
-            mutex_unlock_as_thread((mutex_t *)&pvr_state.dma_lock, thread);
-        else
-            mutex_unlock((mutex_t *)&pvr_state.dma_lock);
-
-        // Buffers are now empty again
-        pvr_state.dma_buffers[pvr_state.ram_target ^ 1].ready = 0;
-    }
+    // Buffers are now empty again
+    pvr_state.dma_buffers[pvr_state.ram_target ^ 1].ready = 0;
 }
 
 void pvr_start_dma(void) {
