@@ -49,12 +49,11 @@ static void dma_next_list(void *thread) {
                 continue;
             }
 
-            // Start the DMA transfer, chaining to ourselves.
-            pvr_dma_load_ta(b->base[i], b->ptr[i], 0, dma_next_list, thread);
-
-            // Mark this list as done, and break out for now.
+            // Mark this list as processed.
             pvr_state.lists_dmaed |= BIT(i);
 
+            // Start the DMA transfer, chaining to ourselves.
+            pvr_dma_load_ta(b->base[i], b->ptr[i], 0, dma_next_list, thread);
             return;
         }
     }
