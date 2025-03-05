@@ -26,7 +26,6 @@
 #include <kos/genwait.h>
 #include <arch/irq.h>
 #include <arch/timer.h>
-#include <dc/perfctr.h>
 #include <arch/arch.h>
 
 /*
@@ -145,7 +144,7 @@ int thd_pslist(int (*pf)(const char *fmt, ...)) {
         pf("%08lx  ", cur->flags);
         pf("%12lu", (uint32_t)cur->wait_timeout);
 
-        ns_time = perf_cntr_timer_ns();
+        ns_time = timer_ns_gettime64();
         cpu_time = thd_get_cpu_time(cur);
 
         pf("%12llu (%6.3lf%%)  ",
@@ -636,7 +635,7 @@ int thd_set_prio(kthread_t *thd, prio_t prio) {
 /* Scheduling routines */
 
 static void thd_update_cpu_time(kthread_t *thd) {
-    const uint64_t ns = perf_cntr_timer_ns();
+    const uint64_t ns = timer_ns_gettime64();
 
     thd_current->cpu_time.total +=
             ns - thd_current->cpu_time.scheduled;
@@ -971,6 +970,17 @@ uint64_t thd_get_cpu_time(kthread_t *thd) {
         thd_update_cpu_time(thd);
 
     return thd->cpu_time.total;
+}
+
+uint64_t thd_get_total_cpu_time(void) {
+    kthread_t *cur;
+    uint64_t retval = 0;
+
+    LIST_FOREACH(cur, &thd_list, t_list) {
+        retval += cur->cpu_time.total;
+    }
+
+    return retval;
 }
 
 /*****************************************************************************/
