@@ -126,11 +126,15 @@ int thd_each(int (*cb)(kthread_t *thd, void *user_data), void *data) {
 }
 
 int thd_pslist(int (*pf)(const char *fmt, ...)) {
-    uint64_t cpu_time, ns_time;
+    uint64_t cpu_time, ns_time, cpu_total = 0;
     kthread_t *cur;
 
     pf("All threads (may not be deterministic):\n");
-    pf("addr\t  tid\tprio\tflags\t  wait_timeout\tcpu_time\t      state\t  name\n");
+    pf("addr\t  tid\tprio\tflags\t  wait_timeout\t  cpu_time\t      state\t  name\n");
+
+    irq_disable_scoped();
+    thd_get_cpu_time(thd_get_current());
+    ns_time = timer_ns_gettime64();
 
     LIST_FOREACH(cur, &thd_list, t_list) {
         pf("%08lx  ", CONTEXT_PC(cur->context));
@@ -144,8 +148,8 @@ int thd_pslist(int (*pf)(const char *fmt, ...)) {
         pf("%08lx  ", cur->flags);
         pf("%12lu", (uint32_t)cur->wait_timeout);
 
-        ns_time = timer_ns_gettime64();
-        cpu_time = thd_get_cpu_time(cur);
+        cpu_time = cur->cpu_time.total;
+        cpu_total += cpu_time;
 
         pf("%12llu (%6.3lf%%)  ",
             cpu_time, (double)cpu_time / (double)ns_time * 100.0);
@@ -153,6 +157,11 @@ int thd_pslist(int (*pf)(const char *fmt, ...)) {
         pf("%-10s  ", thd_state_to_str(cur));
         pf("%-10s\n", cur->label);
     }
+
+    pf("-\t  -\t -\t       -\t     -");
+    pf("%12llu (%6.3lf%%)       -      [system]\n", (ns_time - cpu_total),
+        (double)(ns_time - cpu_total) / (double)ns_time * 100.0);
+
     pf("--end of list--\n");
 
     return 0;

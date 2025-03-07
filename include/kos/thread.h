@@ -731,6 +731,14 @@ int thd_each(int (*cb)(kthread_t *thd, void *user_data), void *data);
 
 /** \brief   Print a list of all threads using the given print function.
 
+    Each thread is printed with its address, tid, priority level, flags,
+    it's wait timeout (if sleeping) the amount of cpu time usage in ns
+    (this includes time in IRQs), state, and name.
+
+    In addition a '[system]' item is provided that represents time since
+    initialization not spent in a thread (context switching, updating
+    wait timeouts, etc).
+
     \param  pf              The printf-like function to print with.
 
     \retval 0               On success.
