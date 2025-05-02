@@ -103,12 +103,24 @@ enum pvr_uv_size {
     PVR_UV_SIZE_1024,
 };
 
-/** \brief   Texture color calculation modes */
+/** \brief   Texture color calculation modes.
+
+    The shading mode specifies how the pixel value used as the "foreground" or
+    "source" for blending is computed.
+
+    Here, "tex" represents the pixel value from the texture, and "col"
+    represents the pixel value from the polygon's color.  RGB() represents the
+    color channels, A() represents the alpha channel, and ARGB() represents the
+    whole pixel (color + alpha).
+
+    Note that the offset color (aka. oargb), if specular lighting is enabled,
+    is added to the result. Its alpha channel is ignored.
+*/
 enum pvr_txr_shading_mode {
-    PVR_TXRENV_REPLACE,         /**< C = Ct, A = At */
-    PVR_TXRENV_MODULATE,        /**< C = Cs * Ct, A = At */
-    PVR_TXRENV_DECAL,           /**< C = (Cs * At) + (Cs * (1-At)), A = As */
-    PVR_TXRENV_MODULATEALPHA,   /**< C = Cs * Ct, A = As * At */
+    PVR_TXRENV_REPLACE,         /**< px = ARGB(tex) */
+    PVR_TXRENV_MODULATE,        /**< px = A(tex) + RGB(col) * RGB(tex) */
+    PVR_TXRENV_DECAL,           /**< px = A(col) + RGB(tex) * A(tex) + RGB(col) * (1 - A(tex)) */
+    PVR_TXRENV_MODULATEALPHA,   /**< px = ARGB(col) * ARGB(tex) */
 };
 
 /** \brief   Texture sampling modes */
