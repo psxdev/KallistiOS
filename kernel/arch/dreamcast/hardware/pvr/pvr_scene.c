@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <kos/dbglog.h>
 #include <kos/genwait.h>
 #include <kos/regfield.h>
 #include <kos/thread.h>

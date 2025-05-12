@@ -15,6 +15,7 @@
 
 #include <arch/types.h>
 #include <kos/mutex.h>
+#include <kos/dbglog.h>
 #include <dc/fs_vmu.h>
 #include <dc/vmufs.h>
 #include <dc/maple.h>
