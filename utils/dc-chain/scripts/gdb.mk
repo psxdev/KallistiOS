@@ -24,15 +24,29 @@ build_gdb: logdir
 build_gdb: $(stamp_gdb_build)
 
 ifeq ($(MACOS), 1)
+HOMEBREW:= $(shell command -v homebrew)
+MACPORT := $(shell command -v port)
   ifeq ($(uname_m),arm64)
     $(info Fixing up MacOS arm64 environment variables)
+ifdef HOMEBREW
     $(stamp_gdb_build): export CPATH ?= /opt/homebrew/include
     $(stamp_gdb_build): export LIBRARY_PATH ?= /opt/homebrew/lib
+endif
+ifdef MACPORT
+	MACPORT_BASE=$(shell command -v port|sed s\#/bin\/port\#\#g)
+	macos_gdb_configure_args += --with-gmp=$(MACPORT_BASE) --with-mpfr=$(MACPORT_BASE) --with-mpc=$(MACPORT_BASE)
+endif
   endif
   ifeq ($(uname_m),x86_64)
     $(info Fixing up MacOS x86_64 environment variables)
+ifdef HOMEBREW
     $(stamp_gdb_build): export CPATH ?= /usr/local/include
     $(stamp_gdb_build): export LIBRARY_PATH ?= /usr/local/lib
+endif
+ifdef MACPORT
+	MACPORT_BASE=$(shell command -v port|sed s\#/bin\/port\#\#g)
+	macos_gdb_configure_args += --with-gmp=$(MACPORT_BASE) --with-mpfr=$(MACPORT_BASE) --with-mpc=$(MACPORT_BASE)
+endif
   endif
 endif
 
